@@ -5,7 +5,7 @@ const {Client} = require('./../../models/client');
 // const accessTokenModel = require('./../../models/accessToken');
 // const refreshTokenModel = require('./../../models/refreshToken');
  const {AuthorizationCode} = require('./../../models/authorizationCode');
-// const userModel = require('./../../models/user');
+const {User} = require('./../../models/user')
 
 
 const client = [{
@@ -25,11 +25,7 @@ const authorizationCodes = [{
     redirectUri: 'someapp.com/'
   },
   clientId: '1',
-  user: {
-    id: '123',
-    username: 'Andrew',
-    password: '123pass'
-  }
+  userId: '123'
 }, {
   code: {
     code: 'fjhsfkshf893yrefhfrfh',
@@ -37,12 +33,19 @@ const authorizationCodes = [{
     redirectUri: 'someapp2.com/'
   },
   clientId: '2',
-  user: {
-    id: '456',
-    username: 'Jen',
-    password: '456pass'
-  }
+  userId: '456'
 }];
+
+const users = [{
+  id: '123',
+  username: 'AndrewEvans',
+  password: '12345'
+}, {
+  id: '456',
+  username: 'JenMick',
+  password: '132134124'
+}];
+
 
 const populateClients = (done) => {
   Client.deleteMany({}).then(() => {
@@ -62,4 +65,13 @@ const populateAuthorizationCodes = (done) => {
   }).then(() => done());
 };
 
-module.exports = {client, populateClients, authorizationCodes, populateAuthorizationCodes}
+const populateUsers = (done) => {
+  User.deleteMany({}).then(() => {
+    let userOne = new User(users[0]).save();
+    let userTwo = new User(users[1]).save();
+
+    return Promise.all([userOne, userTwo]);
+  }).then(() => done());
+};
+
+module.exports = {client, populateClients, authorizationCodes, populateAuthorizationCodes, users, populateUsers}

@@ -1,18 +1,30 @@
 const mongoose = require('./db/mongoose');
-
 const {Client} = require('./models/client');
-const accessTokenModel = require('./models/accessToken');
-const refreshTokenModel = require('./models/refreshToken');
+// const {AccessToken} = require('./models/accessToken');
+// const {RefreshToken} = require('./models/refreshToken');
+const {Token} = require('./models/token');
 const {AuthorizationCode} = require('./models/authorizationCode');
-const userModel = require('./models/user');
+const {User} = require('./models/user');
 
-function generateAccessToken(client, user , scope){}
+const jwt = require('jsonwebtoken');
 
-function generateRefreshToken(client, user, scope){}
+const secretKey = 'Example secret key';
 
-function generateAuthorizationCode(client, user, scope){
 
+
+function generateAccessToken(client, user , scope){
+  let token = jwt.sign({user: user.id, scope}, secretKey, {expiresIn: 3600, subject: client.clientId});
+
+  return token;
 }
+
+function generateRefreshToken(client, user, scope){
+  let token = jwt.sign({user: user.id, scope}, secretKey, {subject: client.clientId});
+
+  return token;
+}
+
+function generateAuthorizationCode(client, user, scope){}
 
 function getAuthorizationCode(authorizationCode){
   return AuthorizationCode.find({ "code.code": {"$eq": authorizationCode }}).then((code) => {
@@ -40,7 +52,18 @@ function getClient(clientId, clientSecret){
   });
 }
 
-function saveToken(accessToken,refreshToken, client, user){}
+function saveToken(accessToken,refreshToken, client, user){
+  let token = new Token({
+    accessToken,
+    accessTokenExpiresAt: 3600,
+    refreshToken,
+    scope: 'READ',
+    clientId: client.clientId,
+    userId: user.id
+  });
+
+  token.save().then(() => token);
+}
 
 function saveAuthorizationCode(code, client, user){}
 

@@ -4,13 +4,9 @@ const AccessTokenSchema  = new mongoose.Schema({
   accessToken: String,
   accessTokenexpiresAt: Date,
   clientId: String,
-  user: {
-    id: String,
-    username: String,
-    password: String
-  }
+  userId: String
 });
 
-const accessTokenInstance = mongoose.model('accessToken', AccessTokenSchema);
+const AccessToken = mongoose.model('accessToken', AccessTokenSchema);
 
-module.exports = {accessTokenInstance};
+module.exports = {AccessToken};
