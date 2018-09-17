@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
 
 const ClientSchema  = new mongoose.Schema({
-  clientId: String,
-  clientSecret: String
+  clientId: {type: String},
+  clientSecret: {type: String},
+  redirectUri: {type: String}
 });
 
-const modelInstance = mongoose.model('client', ClientSchema);
+const Client = mongoose.model('client', ClientSchema);
+
+module.exports = {Client};

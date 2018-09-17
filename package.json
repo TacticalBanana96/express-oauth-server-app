@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test-watch": "nodemon --exec \"npm test\""
   },
   "author": "",
   "license": "ISC",
@@ -12,6 +13,10 @@
     "express-oauth-server": "^2.0.0",
     "hbs": "^4.0.1",
     "mongodb": "^3.1.4",
+    "mongoose": "^5.2.15",
     "oauth2-server": "^3.0.1"
+  },
+  "devDependencies": {
+    "jest": "^23.6.0"
   }
 }
