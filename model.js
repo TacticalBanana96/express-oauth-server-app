@@ -24,7 +24,11 @@ function generateRefreshToken(client, user, scope){
   return token;
 }
 
-function generateAuthorizationCode(client, user, scope){}
+function generateAuthorizationCode(client, user, scope){
+  let code = jwt.sign({user: user.id, scope}, secretKey, {expiresIn: 3600, subject: client.clientId});
+
+   return code;
+}
 
 function getAuthorizationCode(authorizationCode){
   return AuthorizationCode.find({ "code.code": {"$eq": authorizationCode }}).then((code) => {
@@ -32,7 +36,7 @@ function getAuthorizationCode(authorizationCode){
       return Promise.reject();
     }
     return code;
-  })
+  });
 }
 
 // async function getClient(clientId, clientSecret){
@@ -65,7 +69,23 @@ function saveToken(accessToken,refreshToken, client, user){
   token.save().then(() => token);
 }
 
-function saveAuthorizationCode(code, client, user){}
+function saveAuthorizationCode(code, client, user){
+  let authCode = new AuthorizationCode({
+     code: {
+      code,
+      expiresAt: 3600,
+      redirectUri: client.redirectUri
+    },
+    clientId: client.clientId,
+    user: {
+      id: user.id,
+      username: user.username,
+      password: user.password
+    }
+  });
+
+  authCode.save().then(() => authCode);
+}
 
 function revokeAuthorizationCode(code){}
 

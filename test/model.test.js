@@ -49,7 +49,7 @@ describe('getAuthorizationCode', () => {
 
 describe('generateAccessToken', () => {
   test('Should return an access token for the data passed', () => {
-    token = model.generateAccessToken(client[0], users[0] , 'READ')
+    token = model.generateAccessToken(client[0], users[0] , 'READ');
       console.log(token);
       expect(token).toBeTruthy();
       expect(typeof token).toBe('string');
