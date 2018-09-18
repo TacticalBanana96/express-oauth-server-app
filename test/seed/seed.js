@@ -5,7 +5,8 @@ const {Client} = require('./../../models/client');
 // const accessTokenModel = require('./../../models/accessToken');
 // const refreshTokenModel = require('./../../models/refreshToken');
  const {AuthorizationCode} = require('./../../models/authorizationCode');
-const {User} = require('./../../models/user')
+const {User} = require('./../../models/user');
+const {Token} = require('./../../models/token');
 
 
 const client = [{
@@ -48,7 +49,7 @@ const users = [{
 
 
 const populateClients = (done) => {
-  Client.deleteMany({}).then(() => {
+  return Client.deleteMany({}).then(() => {
     let clientOne = new Client(client[0]).save();
     let clientTwo = new Client(client[1]).save();
 
@@ -57,7 +58,7 @@ const populateClients = (done) => {
 };
 
 const populateAuthorizationCodes = (done) => {
-  AuthorizationCode.deleteMany({}).then(()=> {
+  return AuthorizationCode.deleteMany({}).then(()=> {
     let codeOne = new AuthorizationCode(authorizationCodes[0]).save();
     let codeTwo = new AuthorizationCode(authorizationCodes[1]).save();
 
@@ -65,13 +66,17 @@ const populateAuthorizationCodes = (done) => {
   }).then(() => done());
 };
 
-const populateUsers = (done) => {
-  User.deleteMany({}).then(() => {
-    let userOne = new User(users[0]).save();
-    let userTwo = new User(users[1]).save();
+const clearTokens = async () =>{
+  return await Token.deleteMany({});
+}
 
-    return Promise.all([userOne, userTwo]);
-  }).then(() => done());
-};
+// const populateUsers = (done) => {
+//   User.deleteMany({}).then(() => {
+//     let userOne = new User(users[0]).save();
+//     let userTwo = new User(users[1]).save();
+//
+//     return Promise.all([userOne, userTwo]);
+//   }).then(() => done());
+// };
 
-module.exports = {client, populateClients, authorizationCodes, populateAuthorizationCodes, users, populateUsers}
+module.exports = {client, populateClients, authorizationCodes, populateAuthorizationCodes, users, clearTokens}

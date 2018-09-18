@@ -9,8 +9,6 @@ const AuthorizationCodeSchema  = new mongoose.Schema({
   clientId: {type: String},
   user: {
     id: {type: String},
-    username: {type: String},
-    password: {type: String}
   }
 });
 

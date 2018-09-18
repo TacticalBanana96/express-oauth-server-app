@@ -30,33 +30,27 @@ function generateAuthorizationCode(client, user, scope){
    return code;
 }
 
-function getAuthorizationCode(authorizationCode){
-  return AuthorizationCode.find({ "code.code": {"$eq": authorizationCode }}).then((code) => {
-    if(!code){
-      return Promise.reject();
+async function getAuthorizationCode(authorizationCode){
+  return await AuthorizationCode.find({ "code.code": {"$eq": authorizationCode }}).then((code) => {
+    if(!code || (code instanceof Array && code.length === 0)){
+      return Promise.reject('AuthorizationCode not found');
     }
     return code;
   });
 }
 
-// async function getClient(clientId, clientSecret){
-//   let client = await Client.findOne({clientId, clientSecret}).exec();
-//
-//   if(!client){
-//     return Promise.reject();
-//   }
-//   return client;
-// }
-function getClient(clientId, clientSecret){
-  return Client.findOne({clientId, clientSecret}).then((client) => {
-    if(!client){
-      return Promise.reject();
+async function getClient(clientId, clientSecret){
+  return await Client.findOne({clientId, clientSecret}).then((client) => {
+    //if((!client) || (client.length < 1) || client.length === 0) {
+    if(!client || (client instanceof Array && client.length === 0)){
+      return Promise.reject('Client not Found');
     }
     return client;
   });
 }
 
-function saveToken(accessToken,refreshToken, client, user){
+
+async function saveToken(accessToken,refreshToken, client, user){
   let token = new Token({
     accessToken,
     accessTokenExpiresAt: 3600,
@@ -66,10 +60,10 @@ function saveToken(accessToken,refreshToken, client, user){
     userId: user.id
   });
 
-  token.save().then(() => token);
+  return await token.save();
 }
 
-function saveAuthorizationCode(code, client, user){
+async function saveAuthorizationCode(code, client, user){
   let authCode = new AuthorizationCode({
      code: {
       code,
@@ -79,12 +73,10 @@ function saveAuthorizationCode(code, client, user){
     clientId: client.clientId,
     user: {
       id: user.id,
-      username: user.username,
-      password: user.password
     }
   });
 
-  authCode.save().then(() => authCode);
+  return await authCode.save().then(() => authCode);
 }
 
 function revokeAuthorizationCode(code){}

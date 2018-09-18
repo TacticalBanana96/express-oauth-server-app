@@ -1,49 +1,53 @@
 const model = require('./../model');
 const {Client} = require('./../models/client')
-const {client, populateClients, authorizationCodes, populateAuthorizationCodes,  users, populateUsers} = require('./seed/seed');
+const {client, populateClients, authorizationCodes, populateAuthorizationCodes,  users, populateUsers, clearTokens} = require('./seed/seed');
+// const {client, authorizationCodes,  users} = require('./seed/seed');
+
+
+const mongoose = require('mongoose');
 
 beforeEach(populateClients);
 beforeEach(populateAuthorizationCodes);
+beforeEach(clearTokens);
 //beforeEach(populateUsers);
+// afterAll(async() => {
+//   await  mongoose.connection.db.dropDatabase();
+//   mongoose.connection.close();
+// });
 
 describe('getClient', () => {
-  test('Should return client when valid clientid and client clientSecret are passed', (done) => {
-    model.getClient(client[0].clientId, client[0].clientSecret).then((clientRes) => {
-      expect(typeof clientRes).toBe('object');
-      expect(clientRes.clientId).toBe(client[0].clientId);
-      expect(clientRes.clientSecret).toBe( client[0].clientSecret);
-      done();
-    });
+  test('Should return client when valid parameters are passed', () => {
+    return expect(model.getClient(client[0].clientId, client[0].clientSecret)).resolves.toBeTruthy();
   });
 
-  test('Should not return client for incorrect parameters', (done) =>{
-    model.getClient('jfhsd', 'dfgfs').then((client) => {
-      expect(typeof client).toBe('undefined');
-      done()
-    }).catch((e) => {
-      expect(typeof e).toBe('undefined');
-      done();
-    });
+  test('Should return client with values matching the parameters passed', async() => {
+    let clientRes = await model.getClient(client[0].clientId, client[0].clientSecret);
+    return expect(clientRes).toEqual(expect.objectContaining({clientId: client[0].clientId, clientSecret: client[0].clientSecret}));
+  });
+
+  test('Should not return client for incorrect parameters',  () =>{
+    return  expect(model.getClient('jfhsd', 'dfgfs')).rejects.toBeTruthy();
+  });
+
+  test('Should not return client for empty parameters',  () => {
+    return  expect(model.getClient('','')).rejects.toBeTruthy();
   });
 });
 
 describe('getAuthorizationCode', () => {
-  test('Should return authorizationCode object when valid code is passed', (done) => {
-    model.getAuthorizationCode(authorizationCodes[1].code.code).then((authCode) => {
-      console.log('AuthorizationCode', authCode);
-      expect(typeof authCode).toBe('object');
-      // expect(authCode).toBe(authorizationCodes[1].code.code);
-      done();
-    });
+  test('Should return authorizationCode object when valid code is passed',  () => {
+    return  expect(model.getAuthorizationCode(authorizationCodes[1].code.code)).resolves.toBeTruthy();
   });
 
-  test('Should not return an authorizationCode when invalid info is passed', (done) => {
-    model.getAuthorizationCode('dsfhkjsdfgh7923rygu2hr9eyrduf').then((authCode) => {
-      done();
-    }).catch((e) => {
-      expect(typeof e).toBe('undefined');
-      done();
-    });
+  test('Should return authorizationCode with parameters matching the ones passed', async () => {
+    let authCode = authorizationCodes[1].code.code;
+    let res = await model.getAuthorizationCode(authCode);
+  return  expect(res[0].code.code).toEqual(authorizationCodes[1].code.code);
+
+  });
+
+  test('Should not return an authorizationCode when invalid info is passed',  () => {
+    return  expect(model.getAuthorizationCode('dsfhkjsdfgh7923rygu2hr9eyrduf')).rejects.toBeTruthy();
   })
 });
 
@@ -51,7 +55,33 @@ describe('generateAccessToken', () => {
   test('Should return an access token for the data passed', () => {
     token = model.generateAccessToken(client[0], users[0] , 'READ');
       console.log(token);
-      expect(token).toBeTruthy();
       expect(typeof token).toBe('string');
+  });
+});
+
+describe('saveToken', () => {
+  test('Should add Token to the db matching parameters passed', async () => {
+    let accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEwMzc5LCJleHAiOjE1MzczMTM5NzksInN1YiI6IjEifQ.JInJ0i_twklKodOxv0Rwae1j-C7XnraE4ux-BAQgDm4';
+    let refreshToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEwNjQ0LCJleHAiOjE1MzczMTQyNDQsInN1YiI6IjEifQ.iRt50FDe7YSdzRy_f8RNV0aaxcQRZg8GjB6L2aMBPh8';
+
+    let res = await model.saveToken(accessToken, refreshToken, client[0], users[0]);
+    return expect(res).toEqual(expect.objectContaining({accessToken, refreshToken, clientId: client[0].clientId, userId: users[0].id}));
+  });
+});
+
+describe('generateAuthorizationCode', () => {
+  test('Should generate authorizationCode', () => {
+    let res = model.generateAuthorizationCode(client[0], users[0], 'READ');
+    console.log('AUTH CODE: ', res);
+    return expect(res).toBeTruthy();
+  })
+});
+
+describe('saveAuthorizationCode', () => {
+  test('Should add an authorizationCode to the db matching the parameters passed', async () => {
+    let code = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEyOTU5LCJleHAiOjE1MzczMTY1NTksInN1YiI6IjEifQ.qAbUxBD5GuZsnW4JVXAF-vBGXEtV-hJ51ySqmmq9dvk';
+    let res = await model.saveAuthorizationCode(code, client[0], users[0]);
+    console.log('AUTH CODE:', res);
+    return expect(res).toEqual(expect.objectContaining({clientId: client[0].clientId}));
   });
 });
