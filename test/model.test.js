@@ -5,14 +5,17 @@ const {client, populateClients, authorizationCodes, populateAuthorizationCodes, 
 
 
 const mongoose = require('mongoose');
+const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEwMzc5LCJleHAiOjE1MzczMTM5NzksInN1YiI6IjEifQ.JInJ0i_twklKodOxv0Rwae1j-C7XnraE4ux-BAQgDm4';
+const code = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEyOTU5LCJleHAiOjE1MzczMTY1NTksInN1YiI6IjEifQ.qAbUxBD5GuZsnW4JVXAF-vBGXEtV-hJ51ySqmmq9dvk';
+const refreshToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEwNjQ0LCJleHAiOjE1MzczMTQyNDQsInN1YiI6IjEifQ.iRt50FDe7YSdzRy_f8RNV0aaxcQRZg8GjB6L2aMBPh8';
 
 beforeEach(populateClients);
 beforeEach(populateAuthorizationCodes);
-beforeEach(clearTokens);
+beforeAll(clearTokens);
 //beforeEach(populateUsers);
-// afterAll(async() => {
-//   await  mongoose.connection.db.dropDatabase();
-//   mongoose.connection.close();
+// afterAll(() => {
+//  await  mongoose.connection.db.dropDatabase();
+//  mongoose.connection.close();
 // });
 
 describe('getClient', () => {
@@ -21,22 +24,22 @@ describe('getClient', () => {
   });
 
   test('Should return client with values matching the parameters passed', async() => {
-    let clientRes = await model.getClient(client[0].clientId, client[0].clientSecret);
-    return expect(clientRes).toEqual(expect.objectContaining({clientId: client[0].clientId, clientSecret: client[0].clientSecret}));
+    // let clientRes = await model.getClient(client[0].clientId, client[0].clientSecret);
+    return expect(await model.getClient(client[0].clientId, client[0].clientSecret)).toEqual(expect.objectContaining({clientId: client[0].clientId, clientSecret: client[0].clientSecret}));
   });
 
-  test('Should not return client for incorrect parameters',  () =>{
-    return  expect(model.getClient('jfhsd', 'dfgfs')).rejects.toBeTruthy();
+  test('Should not return client for incorrect parameters', () =>{
+    return expect(model.getClient('jfhsd', 'dfgfs')).rejects.toBeTruthy();
   });
 
   test('Should not return client for empty parameters',  () => {
-    return  expect(model.getClient('','')).rejects.toBeTruthy();
+    return expect( model.getClient('','')).rejects.toBeTruthy();
   });
 });
 
 describe('getAuthorizationCode', () => {
-  test('Should return authorizationCode object when valid code is passed',  () => {
-    return  expect(model.getAuthorizationCode(authorizationCodes[1].code.code)).resolves.toBeTruthy();
+  test('Should return authorizationCode object when valid code is passed', () => {
+    return expect( model.getAuthorizationCode(authorizationCodes[1].code.code)).resolves.toBeTruthy();
   });
 
   test('Should return authorizationCode with parameters matching the ones passed', async () => {
@@ -46,24 +49,20 @@ describe('getAuthorizationCode', () => {
 
   });
 
-  test('Should not return an authorizationCode when invalid info is passed',  () => {
-    return  expect(model.getAuthorizationCode('dsfhkjsdfgh7923rygu2hr9eyrduf')).rejects.toBeTruthy();
+  test('Should not return an authorizationCode when invalid info is passed', () => {
+    return expect(model.getAuthorizationCode('dsfhkjsdfgh7923rygu2hr9eyrduf')).rejects.toBeTruthy();
   })
 });
 
 describe('generateAccessToken', () => {
   test('Should return an access token for the data passed', () => {
     token = model.generateAccessToken(client[0], users[0] , 'READ');
-      console.log(token);
       expect(typeof token).toBe('string');
   });
 });
 
 describe('saveToken', () => {
   test('Should add Token to the db matching parameters passed', async () => {
-    let accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEwMzc5LCJleHAiOjE1MzczMTM5NzksInN1YiI6IjEifQ.JInJ0i_twklKodOxv0Rwae1j-C7XnraE4ux-BAQgDm4';
-    let refreshToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEwNjQ0LCJleHAiOjE1MzczMTQyNDQsInN1YiI6IjEifQ.iRt50FDe7YSdzRy_f8RNV0aaxcQRZg8GjB6L2aMBPh8';
-
     let res = await model.saveToken(accessToken, refreshToken, client[0], users[0]);
     return expect(res).toEqual(expect.objectContaining({accessToken, refreshToken, clientId: client[0].clientId, userId: users[0].id}));
   });
@@ -72,16 +71,41 @@ describe('saveToken', () => {
 describe('generateAuthorizationCode', () => {
   test('Should generate authorizationCode', () => {
     let res = model.generateAuthorizationCode(client[0], users[0], 'READ');
-    console.log('AUTH CODE: ', res);
     return expect(res).toBeTruthy();
   })
 });
 
 describe('saveAuthorizationCode', () => {
   test('Should add an authorizationCode to the db matching the parameters passed', async () => {
-    let code = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2NvcGUiOiJSRUFEIiwiaWF0IjoxNTM3MzEyOTU5LCJleHAiOjE1MzczMTY1NTksInN1YiI6IjEifQ.qAbUxBD5GuZsnW4JVXAF-vBGXEtV-hJ51ySqmmq9dvk';
     let res = await model.saveAuthorizationCode(code, client[0], users[0]);
-    console.log('AUTH CODE:', res);
     return expect(res).toEqual(expect.objectContaining({clientId: client[0].clientId}));
+  });
+
+  test('Should not save authorizationCode for empty parameters', () => {
+    return expect(model.saveAuthorizationCode()).rejects.toBeTruthy();
+  });
+});
+
+  describe('getAccessToken', () => {
+    test('Should return token for valid access token passed', async() => {
+      return expect(await model.getAccessToken(accessToken)).toEqual(expect.objectContaining({accessToken}));
+    });
+
+    test('Should not return token for invalid access token', () =>{
+      return expect(model.getAccessToken('jsdfhksjdhflyr432hw89y4jn')).rejects.toBeTruthy();
+    });
+
+    test('Should not return token for empty parameters', () =>{
+      return expect(model.getAccessToken()).rejects.toBeTruthy();
+    });
+});
+
+describe('revokeAuthorizationCode', ()=> {
+  test('Should delete authorizationCode with matching parameters', async () => {
+    return expect(await model.revokeAuthorizationCode(authorizationCodes[1].code.code)).toEqual(expect.objectContaining({clientId: authorizationCodes[1].clientId}));
+  });
+
+  test('Should not delete authorizationCode when invalid parameters are passed', () => {
+    return expect(model.revokeAuthorizationCode('jdfhksdhfkjdsfhlajds')).rejects.toBeTruthy();
   });
 });

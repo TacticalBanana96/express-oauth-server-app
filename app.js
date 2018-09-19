@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const oauthserver = require('oauth2-server');
+const AccessDeniedError = require('oauth2-server/lib/errors/access-denied-error');
 
 const {mongoose} = require('./db/mongoose');
 
@@ -10,42 +11,75 @@ const app = express();
 const Request = oauthserver.Request;
 const Response = oauthserver.Response;
 
-let request = new Request({});
-let response = new Response({});
+// let request = new Request({method: 'GET', });
+// let response = new Response(res);
 app.use(bodyParser.urlencoded({ extended: true}));
 app.use(bodyParser.json());
 
-app.oauth = new oauthserver({
+const oauth = new oauthserver({
 	model: require('./model.js')
 });
 
-// app.all('/oauth/token', app.oauth.token());
-//
-// app.all('/oauth/authorize', app.oauth.authorize(function(req, next) {
-//
-// // The first param should to indicate an error
-//
-// // The second param should a bool to indicate if the user did authorise the app
-//
-// // The third param should for the user/uid (only used for passing to saveAuthCode)
-//
-// next(null, true, '585273a465f7eb444462eb16', null);
-//
-// }));
-app.get("/oauth/authorize", (req, res) => {
-    // render an authorization form
-});
-// app.post("/oauth/authorize", app.oauth.authorize());
-app.post("/oauth/token", app.oauth.token(request, response)
-  .then((token) => {
-    // The resource owner granted the access request.
-  })
-  .catch((err) => {
-    // The request was invalid or not authorized.
+function tokenHandler(options) {
+  return (req, res, next) =>{
+    let request = new Request(req);
+    let response = new Response(res);
+    return oauth.token(request, response, options)
+      .then((code) => {
+        res.locals.oauth = {token};
+        next();
+      }).catch((err) => {
+        //handle error
+        console.log(err);
+      });
+  }
+}
 
-  }));
-//app.use(app.oauth.errorHandler());
-app.use("/secure", app.oauth.authenticate());
+function authenticateHandler(options) {
+  return (req, res, next) => {
+    let request = new Request(req);
+    let response = new Response(res);
+    return oauth.authenticate(request, response, options)
+      .then((token) => {
+        res.locals.oauth = {token: token};
+        next();
+      }).catch((err) => {
+        // handle error condition
+        console.log(err);
+      });
+  }
+}
+
+function authorizeHandler(options) {
+  return (req,res, next) => {
+    let request = new Request(req);
+    let response = new Response(res);
+    return oauth.authorize(request, response, options)
+      .then((code) => {
+        res.locals.oauth = {code: code};
+        next();
+      }).catch((err) => {
+        // handle error condition
+        console.log(err);
+      });
+  }
+}
+
+app.post('/oauth/token', (req, res) => {
+  oauth.token(req, res).then((token) => {
+    console.log(token);
+  }).catch((err) => {
+    console.log(err);
+  });
+})
+
+app.get('/oauth/authorize', (req, res) => {
+  oauth.authorize(req, res).then((code) => {
+    console.log(code);
+  }).catch((err) => {
+    console.log(err);
+  });
+})
 
 app.listen(port, ()=>{
   console.log(`app has started on port ${port}`);
