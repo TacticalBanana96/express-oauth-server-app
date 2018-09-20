@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 
 const ClientSchema  = new mongoose.Schema({
-  clientId: {type: String},
+  id: {type: String},
   clientSecret: {type: String},
-  redirectUri: {type: String}
+  redirectUri: {type: String},
+  grants: [String]
 });
 
 const Client = mongoose.model('client', ClientSchema);

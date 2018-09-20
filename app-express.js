@@ -26,6 +26,17 @@ app.get('oauth/authorize', (req, res) => {});
 // Post authorization.
 app.post('/oauth/authorize', (req, res)=> {});
 
+
+app.get('/', (req, res) =>{
+  // Does not require an access_token.
+  res.send('Hallo');
+});
+
+app.get('/secret', app.oauth.authorize(),(req, res) => {
+  // Will require a valid access_token.
+  res.send('Secret area');
+});
+
 app.listen(port, ()=>{
   console.log(`app has started on port ${port}`);
   console.log(Buffer.from('1' + ':' + '123abc').toString('base64'));

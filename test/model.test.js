@@ -20,12 +20,12 @@ beforeAll(clearTokens);
 
 describe('getClient', () => {
   test('Should return client when valid parameters are passed', () => {
-    return expect(model.getClient(client[0].clientId, client[0].clientSecret)).resolves.toBeTruthy();
+    return expect(model.getClient(client[0].id, client[0].clientSecret)).resolves.toBeTruthy();
   });
 
   test('Should return client with values matching the parameters passed', async() => {
-    // let clientRes = await model.getClient(client[0].clientId, client[0].clientSecret);
-    return expect(await model.getClient(client[0].clientId, client[0].clientSecret)).toEqual(expect.objectContaining({clientId: client[0].clientId, clientSecret: client[0].clientSecret}));
+    // let clientRes = await model.getClient(client[0].id, client[0].clientSecret);
+    return expect(await model.getClient(client[0].id, client[0].clientSecret)).toEqual(expect.objectContaining({id: client[0].id, redirectUri: client[0].redirectUri}));
   });
 
   test('Should not return client for incorrect parameters', () =>{
@@ -45,8 +45,13 @@ describe('getAuthorizationCode', () => {
   test('Should return authorizationCode with parameters matching the ones passed', async () => {
     let authCode = authorizationCodes[1].code.code;
     let res = await model.getAuthorizationCode(authCode);
-  return  expect(res[0].code.code).toEqual(authorizationCodes[1].code.code);
+  return  expect(res.code).toEqual(authorizationCodes[1].code.code);
 
+  });
+  test('ExpiresAt should be type Date', async () => {
+    let authCode = authorizationCodes[1].code.code;
+    let res = await model.getAuthorizationCode(authCode);
+    return expect(res.expiresAt instanceof Date).toBe(true);
   });
 
   test('Should not return an authorizationCode when invalid info is passed', () => {
@@ -63,8 +68,13 @@ describe('generateAccessToken', () => {
 
 describe('saveToken', () => {
   test('Should add Token to the db matching parameters passed', async () => {
+    let token = {
+      accessToken,
+      accessTokenExpiresAt: new Date(2018,9,20),
+
+    }
     let res = await model.saveToken(accessToken, refreshToken, client[0], users[0]);
-    return expect(res).toEqual(expect.objectContaining({accessToken, refreshToken, clientId: client[0].clientId, userId: users[0].id}));
+    return expect(res).toEqual(expect.objectContaining({accessToken, refreshToken, client: {id: client[0].id}, user: {id: users[0].id}}));
   });
 });
 
@@ -78,8 +88,10 @@ describe('generateAuthorizationCode', () => {
 describe('saveAuthorizationCode', () => {
   test('Should add an authorizationCode to the db matching the parameters passed', async () => {
     let res = await model.saveAuthorizationCode(code, client[0], users[0]);
-    return expect(res).toEqual(expect.objectContaining({clientId: client[0].clientId}));
-  });
+    return expect(res).toEqual(expect.objectContaining({  user: { id: users[0].id}, client: {id: client[0].id} }));
+    //return expect(res).toEqual(expect.objectContaining({ user: { id: users[0].id}}));
+
+ });
 
   test('Should not save authorizationCode for empty parameters', () => {
     return expect(model.saveAuthorizationCode()).rejects.toBeTruthy();
@@ -102,7 +114,8 @@ describe('saveAuthorizationCode', () => {
 
 describe('revokeAuthorizationCode', ()=> {
   test('Should delete authorizationCode with matching parameters', async () => {
-    return expect(await model.revokeAuthorizationCode(authorizationCodes[1].code.code)).toEqual(expect.objectContaining({clientId: authorizationCodes[1].clientId}));
+    let deletedRes = await model.revokeAuthorizationCode(authorizationCodes[1].code.code);
+    return expect(deletedRes.code.code).toBe(authorizationCodes[1].code.code);
   });
 
   test('Should not delete authorizationCode when invalid parameters are passed', () => {

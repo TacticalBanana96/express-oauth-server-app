@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const AccessTokenSchema  = new mongoose.Schema({
   accessToken: String,
-  accessTokenexpiresAt: Date,
+  expiresAt: Date,
+  scope: String,
   clientId: String,
   userId: String
 });

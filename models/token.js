@@ -5,8 +5,12 @@ const TokenSchema  = new mongoose.Schema({
   accessTokenExpiresAt: {type: String},
   refreshToken: {type: String},
   scope: {type: String},
-  clientId: {type: String},
-  userId: {type: String}
+  client: {
+    id: {type: String}
+  },
+  user: {
+    id: {type: String}
+  }
 });
 
 const Token = mongoose.model('token', TokenSchema);

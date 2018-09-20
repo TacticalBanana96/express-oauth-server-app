@@ -10,28 +10,34 @@ const {Token} = require('./../../models/token');
 
 
 const client = [{
-  clientId: '1',
+  id: '1',
   clientSecret: '123abc',
-  redirectUri: 'www.app.com'
+  redirectUri: 'http://localhost:/3000/',
+  grants: [
+        "authorization_code"
+    ]
 }, {
-  clientId: '2',
+  id: '2',
   clientSecret: '456def',
-  redirectUri: 'www.app2.com'
+  redirectUri: 'http://localhost:/3000/',
+  grants: [
+        "authorization_code"
+    ]
 }];
 
 const authorizationCodes = [{
   code: {
     code: 'sgdjhgdadhakhdadj39',
-    expiresAt: new Date().getTime(),
-    redirectUri: 'someapp.com/'
-  },
+    expiresAt: new Date(2018,9,20).getTime(),
+    redirectUri: 'http://localhost:/3000/'
+ },
   clientId: '1',
   userId: '123'
 }, {
   code: {
     code: 'fjhsfkshf893yrefhfrfh',
-    expiresAt: new Date().getTime(),
-    redirectUri: 'someapp2.com/'
+    expiresAt: new Date(2018,9,20),
+    redirectUri: 'http://localhost:/3000/'
   },
   clientId: '2',
   userId: '456'
