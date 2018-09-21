@@ -11,8 +11,9 @@ const refreshToken ='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjoiMTIzIiwic2
 
 beforeEach(populateClients);
 beforeEach(populateAuthorizationCodes);
+beforeEach(populateUsers);
 beforeAll(clearTokens);
-//beforeEach(populateUsers);
+
 // afterAll(() => {
 //  await  mongoose.connection.db.dropDatabase();
 //  mongoose.connection.close();
@@ -39,17 +40,17 @@ describe('getClient', () => {
 
 describe('getAuthorizationCode', () => {
   test('Should return authorizationCode object when valid code is passed', () => {
-    return expect( model.getAuthorizationCode(authorizationCodes[1].code.code)).resolves.toBeTruthy();
+    return expect( model.getAuthorizationCode(authorizationCodes[1].code)).resolves.toBeTruthy();
   });
 
   test('Should return authorizationCode with parameters matching the ones passed', async () => {
-    let authCode = authorizationCodes[1].code.code;
+    let authCode = authorizationCodes[1].code;
     let res = await model.getAuthorizationCode(authCode);
-  return  expect(res.code).toEqual(authorizationCodes[1].code.code);
+  return  expect(res.code).toEqual(authorizationCodes[1].code);
 
   });
   test('ExpiresAt should be type Date', async () => {
-    let authCode = authorizationCodes[1].code.code;
+    let authCode = authorizationCodes[1].code;
     let res = await model.getAuthorizationCode(authCode);
     return expect(res.expiresAt instanceof Date).toBe(true);
   });
@@ -71,9 +72,11 @@ describe('saveToken', () => {
     let token = {
       accessToken,
       accessTokenExpiresAt: new Date(2018,9,20),
-
+      scope: 'READ',
+      refreshToken,
+      refreshTokenExpiresAt: new Date(2018,9,20)
     }
-    let res = await model.saveToken(accessToken, refreshToken, client[0], users[0]);
+    let res = await model.saveToken(token, client[0], users[0]);
     return expect(res).toEqual(expect.objectContaining({accessToken, refreshToken, client: {id: client[0].id}, user: {id: users[0].id}}));
   });
 });
@@ -114,8 +117,8 @@ describe('saveAuthorizationCode', () => {
 
 describe('revokeAuthorizationCode', ()=> {
   test('Should delete authorizationCode with matching parameters', async () => {
-    let deletedRes = await model.revokeAuthorizationCode(authorizationCodes[1].code.code);
-    return expect(deletedRes.code.code).toBe(authorizationCodes[1].code.code);
+    let deletedRes = await model.revokeAuthorizationCode(authorizationCodes[1].code);
+    return expect(deletedRes.code).toBe(authorizationCodes[1].code);
   });
 
   test('Should not delete authorizationCode when invalid parameters are passed', () => {

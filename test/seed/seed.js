@@ -2,11 +2,11 @@ const mongoose = require('mongoose');
 
 const {Client} = require('./../../models/client');
 
-// const accessTokenModel = require('./../../models/accessToken');
-// const refreshTokenModel = require('./../../models/refreshToken');
- const {AuthorizationCode} = require('./../../models/authorizationCode');
+const {AccessToken} = require('./../../models/accessToken');
+const {RefreshToken} = require('./../../models/refreshToken');
+const {AuthorizationCode} = require('./../../models/authorizationCode');
 const {User} = require('./../../models/user');
-const {Token} = require('./../../models/token');
+
 
 
 const client = [{
@@ -26,19 +26,19 @@ const client = [{
 }];
 
 const authorizationCodes = [{
-  code: {
+  //code: {
     code: 'sgdjhgdadhakhdadj39',
     expiresAt: new Date(2018,9,20).getTime(),
-    redirectUri: 'http://localhost:/3000/'
- },
+    redirectUri: 'http://localhost:/3000/',
+ //},
   clientId: '1',
   userId: '123'
 }, {
-  code: {
+  //code: {
     code: 'fjhsfkshf893yrefhfrfh',
     expiresAt: new Date(2018,9,20),
-    redirectUri: 'http://localhost:/3000/'
-  },
+    redirectUri: 'http://localhost:/3000/',
+//  },
   clientId: '2',
   userId: '456'
 }];
@@ -73,16 +73,17 @@ const populateAuthorizationCodes = (done) => {
 };
 
 const clearTokens = async () =>{
-  return await Token.deleteMany({});
+  await AccessToken.deleteMany({});
+  await RefreshToken.deleteMany({});
 }
 
-// const populateUsers = (done) => {
-//   User.deleteMany({}).then(() => {
-//     let userOne = new User(users[0]).save();
-//     let userTwo = new User(users[1]).save();
-//
-//     return Promise.all([userOne, userTwo]);
-//   }).then(() => done());
-// };
+const populateUsers = (done) => {
+  User.deleteMany({}).then(() => {
+    let userOne = new User(users[0]).save();
+    let userTwo = new User(users[1]).save();
 
-module.exports = {client, populateClients, authorizationCodes, populateAuthorizationCodes, users, clearTokens}
+    return Promise.all([userOne, userTwo]);
+  }).then(() => done());
+};
+
+module.exports = {client, populateClients, authorizationCodes, populateAuthorizationCodes, users, clearTokens, populateUsers}

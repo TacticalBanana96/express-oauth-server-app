@@ -20,27 +20,11 @@ const oauth = new oauthserver({
 	debug: true
 });
 
-//
-// function tokenHandler(options) {
-//   return (req, res, next) =>{
-//     let request = new Request(req);
-//     let response = new Response(res);
-//     return oauth.token(request, response, options)
-//       .then((code) => {
-//         res.locals.oauth = {token};
-//         next();
-//       }).catch((err) => {
-//         //handle error
-//         console.log(err);
-//       });
-//   }
-// }
-//
-// function authenticateHandler(options) {
-//   return (req, res, next) => {
-//     let request = new Request(req);
-//     let response = new Response(res);
-//     return oauth.authenticate(request, response, options)
+app.get('/', (req, res) => {
+		res.send('Hallo');
+});
+
+// oauth.authenticate(request, response, options)
 //       .then((token) => {
 //         res.locals.oauth = {token: token};
 //         next();
@@ -48,36 +32,7 @@ const oauth = new oauthserver({
 //         // handle error condition
 //         console.log(err);
 //       });
-//   }
-// }
-//
-// function authorizeHandler(options) {
-//   return (req,res, next) => {
-//     let request = new Request(req);
-//     let response = new Response(res);
-//     return oauth.authorize(request, response, options)
-//       .then((code) => {
-//         res.locals.oauth = {code: code};
-//         next();
-//       }).catch((err) => {
-//         // handle error condition
-//         console.log(err);
-//       });
-//   }
-// }
-app.get('/', (req, res) => {
-		res.send('Hallo');
-});
 
-// app.all('/oauth/token', app.oauth.token());
-// app.get('/oauth/authorize', app.oauth.authorize(), (req, res) => {
-// 	res.send('Secret Area');
-// })
-//
-// app.get('/public', function (req, res) {
-//   // Does not require an access_token
-//   res.send('Public area');
-// });
 app.post('/oauth/token', (req, res) => {
 	let request = new Request(req);
 	let response = new Response(res);
@@ -85,9 +40,7 @@ app.post('/oauth/token', (req, res) => {
 	oauth.token(request, response)
 	  .then((code) => {
 	    res.locals.oauth = {token};
-	    //next();
 	  }).catch((err) => {
-	    //handle error
 			res.status(err.statusCode).send(err.message)
 	    console.log(err);
 	  });
@@ -100,9 +53,8 @@ app.get('/oauth/authorize', (req, res) => {
 	oauth.authorize(request, response)
   .then((code) => {
     res.locals.oauth = {code: code};
-    //next();
   }).catch((err) => {
-    // handle error condition
+		res.status(err.statusCode).send(err.message)
     console.log(err);
   });
 });
@@ -114,12 +66,16 @@ app.post('/oauth/authorize', (req, res) => {
 	oauth.authorize(request, response)
 		.then((code) => {
 			res.locals.oauth = {code: code};
-	    //next();
 		}).catch((err) => {
+			res.send(err);
+			//res.status(err.statusCode).send(err.message)
 			console.log(err);
 		});
 });
 
+
 app.listen(port, ()=>{
   console.log(`app has started on port ${port}`);
 });
+
+module.exports = {app}

@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const ClientSchema  = new mongoose.Schema({
-  id: {type: String},
-  clientSecret: {type: String},
-  redirectUri: {type: String},
+  id: String,
+  clientSecret: String,
+  redirectUri: String,
   grants: [String]
 });
 
