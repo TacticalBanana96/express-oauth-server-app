@@ -44,9 +44,10 @@ let code = await AuthorizationCode.findOne({code: authorizationCode});
 }
 
 async function getClient(id, clientSecret){
-  let client = await Client.findOne({id, clientSecret});
-
-    if(!client || (client instanceof Array && client.length === 0)){
+  let secret = clientSecret || secretKey;
+  let client = await Client.findOne({id, clientSecret: secret});
+  console.log('CLIENT', client);
+    if(!client){
       return Promise.reject('Client not Found');
     }
     return Promise.resolve({

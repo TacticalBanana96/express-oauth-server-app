@@ -4,7 +4,7 @@ const oauthserver = require('oauth2-server');
 const AccessDeniedError = require('oauth2-server/lib/errors/access-denied-error');
 const ExpressOAuthServer = require('express-oauth-server');
 const {mongoose} = require('./db/mongoose');
-
+//// TODO: CHANGE redirectUri TO redirectUris
 const port = 3000;
 
 const app = express();
