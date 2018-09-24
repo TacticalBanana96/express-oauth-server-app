@@ -33,45 +33,94 @@ app.get('/', (req, res) => {
 //         console.log(err);
 //       });
 
-app.post('/oauth/token', (req, res) => {
+// app.all('/oauth/token', (req, res) => {
+// 	let request = new Request(req);
+// 	let response = new Response(res);
+
+// 	oauth.token(request, response)
+// 	  .then((token) => {
+// 			res.locals.oauth = {token};
+// 			res.send(token);
+// 	  }).catch((err) => {
+// 			res.status(err.statusCode).send(err.message)
+// 	    console.log(err);
+// 	  });
+// });
+
+
+// app.post('/oauth/authorize', (req, res) => {
+// 	let request = new Request(req);
+// 	let response = new Response(res);
+
+// 	oauth.authorize(request, response)
+// 		.then(() => {
+// 			res.send('WELCOME TO SECRET AREA');
+// 		}).catch((err) => {
+// 			res.send(err);
+// 			console.log(err);
+// 		});
+// });
+
+app.all('/oauth/authenticate', (req, res, next)=> {
+	let request = new Request(req);
+	let response = new Response(res);
+
+	oauth.authenticate(request, response)
+	.then((token) => {
+		res.locals.oauth = {token};
+		res.send(token);
+		next();
+	}).catch((err) => {
+		res.status(401).send();
+		console.log(err);
+	});
+});
+
+
+app.post('/oauth/authorize', (req, res, next) => {
+	let request = new Request(req);
+	let response = new Response(res);
+
+	oauth.authorize(request, response)
+	.then((code) => {
+		res.locals.oauth = {code};
+		res.send(code);
+		next();
+	}).catch((err) => {
+		res.status(err.statusCode).send();
+		res.send(err.message)
+		console.log(err);
+	});
+});
+
+app.post('/oauth/token', (req, res, next) => {
 	let request = new Request(req);
 	let response = new Response(res);
 
 	oauth.token(request, response)
-	  .then((code) => {
-	    res.locals.oauth = {token};
-	  }).catch((err) => {
-			res.status(err.statusCode).send(err.message)
-	    console.log(err);
-	  });
+	.then((token)=> {
+		res.locals.oauth = {token};
+		res.send(token)
+		next();
+	})
+	.catch((err)=> {
+		res.status(err.statusCode).send();
+		console.log(err);
+	});
 });
+// app.all('/oauth/token', (req, res) => {
+// 	let request = new Request(req);
+// 	let response = new Response(res);
 
-app.get('/oauth/authorize', (req, res) => {
-	let request = new Request(req);
-	let response = new Response(res);
-
-	oauth.authorize(request, response)
-  .then((code) => {
-    res.locals.oauth = {code: code};
-  }).catch((err) => {
-		res.status(err.statusCode).send(err.message)
-    console.log(err);
-  });
-});
-
-app.post('/oauth/authorize', (req, res) => {
-	let request = new Request(req);
-	let response = new Response(res);
-
-	oauth.authorize(request, response)
-		.then((code) => {
-			res.locals.oauth = {code: code};
-		}).catch((err) => {
-			res.send(err);
-			//res.status(err.statusCode).send(err.message)
-			console.log(err);
-		});
-});
+// 	oauth.token(request, response)
+// 	  .then((token) => {
+// 			res.locals.oauth = {token};
+// 			res.send(token);
+// 	  }).catch((err) => {
+// 			res.status(err.statusCode).send(err.message)
+// 	    console.log(err);
+// 	  });
+// });
 
 
 app.listen(port, ()=>{
